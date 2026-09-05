@@ -1,0 +1,19 @@
+services:
+  bot_db:
+    container_name: bot_db
+    image: postgres:17
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 3s
+      timeout: 3s
+      retries: 3
+    env_file:
+      - .env.docker
+    volumes:
+      - bot_db_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+volumes:
+  bot_db_data:
