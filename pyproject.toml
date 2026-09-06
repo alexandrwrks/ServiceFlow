@@ -21,4 +21,5 @@ dependencies = [
     "taskiq>=0.12.6",
     "taskiq-aio-pika>=0.6.0",
     "uvicorn>=0.52.4",
+    "loguru>=0.7.3",
 ]

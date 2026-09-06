@@ -3,7 +3,7 @@ from fastapi import APIRouter
 router = APIRouter()
 
 
-@router.post("/auth/telegram")
+@router.post("/telegram")
 async def telegram_auth(
 
 ):

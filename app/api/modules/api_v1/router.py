@@ -9,7 +9,7 @@ router = APIRouter()
 
 @router.post("/api/v1/companies")
 async def create_company(
-        params: NewCompanySchema = Depends(),
+        params: NewCompanySchema,
         service: CompanyService = Depends(get_company_service)
 ):
     return await service.create_company(params)
@@ -24,7 +24,7 @@ async def get_company(
 @router.patch("/api/v1/companies/{company_id}")
 async def update_company(
         company_id: int,
-        params: NewCompanySchema = Depends(),
+        params: NewCompanySchema,
         service: CompanyService = Depends(get_company_service)
 ):
     return await service.update_company(company_id, params)
