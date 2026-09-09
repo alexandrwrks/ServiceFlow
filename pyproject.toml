@@ -16,10 +16,10 @@ dependencies = [
     "pydantic-settings>=2.15.0",
     "pytest>=9.1.1",
     "pytest-asyncio>=1.4.0",
-    "redis>=8.1.0",
     "sqlalchemy>=2.0.52",
     "taskiq>=0.12.6",
     "taskiq-aio-pika>=0.6.0",
     "uvicorn>=0.52.4",
     "loguru>=0.7.3",
+    "redis>=8.1.0",
 ]
