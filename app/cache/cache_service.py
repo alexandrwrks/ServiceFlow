@@ -9,7 +9,9 @@ class CacheService:
     def __init__(self, redis: Redis):
         self.redis = redis
 
-    async def get(self, key: str, schema: Type[BaseModel] | None = None, many: bool = False):
+    async def get(
+        self, key: str, schema: Type[BaseModel] | None = None, many: bool = False
+    ):
         value = await self.redis.get(key)
 
         if value is None:
@@ -33,7 +35,6 @@ class CacheService:
             value = [
                 item.model_dump(mode="json") if isinstance(item, BaseModel) else item
                 for item in value
-
             ]
         await self.redis.set(key, json.dumps(value), ex=expire)
 

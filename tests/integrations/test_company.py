@@ -43,7 +43,7 @@ async def test_create_company_access(client):
 
     data = response.json()
 
-    assert  data.get("message") == "Company created successfully"
+    assert data.get("message") == "Company created successfully"
 
     assert "id" in data
 
@@ -66,7 +66,10 @@ async def test_create_company_failed(client):
 
     data = response.json()
 
-    assert data.get("detail")[0].get("msg") == "value is not a valid email address: An email address must have an @-sign."
+    assert (
+        data.get("detail")[0].get("msg")
+        == "value is not a valid email address: An email address must have an @-sign."
+    )
 
 
 @pytest.mark.asyncio

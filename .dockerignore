@@ -6,3 +6,4 @@ __pycache__
 app/logs
 .todo
 .vscode
+.gitignore

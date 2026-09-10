@@ -1,8 +1,8 @@
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.modules.api_v1.repo import CompanyRepo
-from app.api.modules.api_v1.schemas import NewCompanySchema, ResponseCompany
+from app.modules.companies.repo import CompanyRepo
+from app.modules.companies.schemas import NewCompanySchema, ResponseCompany
 from app.cache.cache_service import CacheService
 from app.utils.logger import logger
 
@@ -49,7 +49,7 @@ class CompanyService:
             logger.exception("Failed to create company")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_ERROR,
-                detail="Failed to create company"
+                detail="Failed to create company",
             )
 
         logger.info("Successfully create company: {}", company_id)
@@ -66,7 +66,7 @@ class CompanyService:
             logger.exception("Failed to update company")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_ERROR,
-                detail="Failed to update company"
+                detail="Failed to update company",
             )
 
         await self.cache.delete(key)
