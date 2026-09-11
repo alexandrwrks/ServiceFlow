@@ -1,6 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.database.models import Companies
 from app.modules.companies.repo import CompanyRepo
 from app.modules.companies.schemas import NewCompanySchema, ResponseCompany
 from app.cache.cache_service import CacheService
@@ -12,8 +13,8 @@ class CompanyService:
         self.repo = CompanyRepo(session)
         self.cache = cache
 
-    async def get_company(self, company_id: int) -> ResponseCompany:
-        key = f"company:{company_id}"
+    async def get_company(self, company: Companies) -> ResponseCompany:
+        key = f"company:{company.id}"
 
         cached = await self.cache.get(key, ResponseCompany)
         if cached is not None:
@@ -21,9 +22,6 @@ class CompanyService:
             return cached
 
         logger.info("REDIS MISS: {}", key)
-        company = await self.repo.get_company_by_id(company_id)
-        if company is None:
-            raise HTTPException(status_code=404, detail="Company not found")
 
         response = ResponseCompany.model_validate(company)
         await self.cache.set(key, response)

@@ -24,7 +24,7 @@ class CompanyRepo:
         result = await self.db.execute(
             insert(Companies)
             .values(
-                name=params.title,
+                name=params.name,
                 description=params.description,
                 phone=params.phone,
                 email=params.email,
@@ -39,7 +39,7 @@ class CompanyRepo:
             update(Companies)
             .where(Companies.id == company_id)
             .values(
-                name=params.title,
+                name=params.name,
                 description=params.description,
                 phone=params.phone,
                 email=params.email,

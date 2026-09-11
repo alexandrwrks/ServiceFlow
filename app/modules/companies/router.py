@@ -21,7 +21,7 @@ async def get_company(
     company: Companies = Depends(check_exists_company_id),
     service: CompanyService = Depends(get_company_service),
 ):
-    return await service.get_company(company.id)
+    return await service.get_company(company)
 
 
 @router.patch("/{company_id}")

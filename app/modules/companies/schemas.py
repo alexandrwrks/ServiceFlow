@@ -4,10 +4,11 @@ from pydantic import BaseModel, EmailStr, ConfigDict
 
 
 class NewCompanySchema(BaseModel):
-    title: str
+    name: str
     description: str
     phone: str
     email: EmailStr
+
 
 
 class ResponseCompany(BaseModel):
