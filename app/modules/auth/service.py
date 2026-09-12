@@ -4,11 +4,12 @@ from datetime import datetime, timezone, timedelta
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database.models import Users, UserRole
+from app.database.models import Users, UserRole, StatusType
+from app.jwt.schemas import TokenData
 from app.jwt.service import jwt_service
 from app.modules.auth.repository import AuthRepo
-from app.modules.auth.schemas import RegisterCompanyRequest, InvitationSchema
-from app.utils.security.password import hashed_password
+from app.modules.auth.schemas import RegisterCompanyRequest, InvitationSchema, LoginUserSchema
+from app.utils.security.password import hashed_password, verify_password
 from app.utils.security.token import hashed_token
 
 class AuthService:
@@ -104,9 +105,31 @@ class AuthService:
             )
 
         password_hash = hashed_password(new_password)
-        
+
         await self.repo.update_user_password(user_id, password_hash)
 
         return {
             "message": "Employee activated",
         }
+
+    async def login(self, params: LoginUserSchema):
+        exist_user = await self.repo.get_user_by_email(params.email)
+        if exist_user is None or not verify_password(exist_user.password_hash, params.password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid email or password"
+            )
+
+        if exist_user.status == StatusType.INACTIVE:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Inactive user"
+            )
+
+        return jwt_service.get_tokens(
+            TokenData(
+                user_id=exist_user.id,
+                role=exist_user.role,
+                company_id=exist_user.company_id,
+            )
+        )
