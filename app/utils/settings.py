@@ -13,6 +13,12 @@ class Settings(BaseSettings):
     REDIS_HOST: str
     REDIS_PORT: int
 
+    FRONTEND_URL: str
+    SMTP_PASSWORD: str
+    SMTP_USERNAME: str
+    SMTP_HOST: str
+    EMAIL_FROM: str = "koozma-alex@mail.ru"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         extra="ignore",

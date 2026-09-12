@@ -22,4 +22,5 @@ dependencies = [
     "uvicorn>=0.52.4",
     "loguru>=0.7.3",
     "redis>=8.1.0",
+    "aiosmtplib>=5.1.3",
 ]
