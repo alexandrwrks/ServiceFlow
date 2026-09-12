@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends
 
-from app.modules.auth.deps import get_auth_service
-from app.modules.auth.schemas import RegisterUserSchema, LoginUserSchema, RegisterCompanySchema, RegisterCompanyRequest
+from app.database.models import Users
+from app.modules.auth.deps import get_auth_service, check_owner_user, get_current_user
+from app.modules.auth.schemas import LoginUserSchema, RegisterCompanyRequest, InvitationSchema, NewPasswordSchema
 from app.modules.auth.service import AuthService
 
 router = APIRouter()
@@ -22,12 +23,23 @@ async def register_user(
     return await service.register_company(params)
 
 
-@router.post("/register-employee")
+@router.post("/employees/invitations")
 async def register_employee(
-        params: RegisterUserSchema,
+        params: InvitationSchema,
+        owner_user: Users = Depends(check_owner_user),
         service: AuthService = Depends(get_auth_service)
 ):
-    return await service.register_new_employee(params)
+    return await service.register_new_employee(params, owner_user)
+
+
+@router.post("/employees/invitations/{token}/activate")
+async def activate_employee(
+        token: str,
+        params: NewPasswordSchema,
+        service: AuthService = Depends(get_auth_service)
+):
+    """Активация сотрудника"""
+    return await service.accept_employee_invitation(token, params.new_password)
 
 
 @router.post("/login")

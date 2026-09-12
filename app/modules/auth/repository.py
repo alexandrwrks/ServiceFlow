@@ -1,11 +1,12 @@
+from datetime import datetime, timezone
 from typing import List
 
-from sqlalchemy import or_, select
+from sqlalchemy import or_, select, and_, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database.models import Companies, Users, UserRole, Employees
-from app.modules.auth.schemas import RegisterCompanySchema, RegisterUserSchema
+from app.database.models import Companies, Users, UserRole, Employees, UsersToken
+from app.modules.auth.schemas import RegisterCompanySchema, RegisterUserSchema, InvitationSchema
 
 
 class AuthRepo:
@@ -74,3 +75,88 @@ class AuthRepo:
         )
 
         return result.scalar_one_or_none()
+
+    async def get_user_by_id(self, user_id: int) -> Users | None:
+        result = await self.session.execute(
+            select(Users)
+            .where(Users.id == user_id)
+        )
+
+        return result.scalar_one_or_none()
+
+    async def get_employee_by_id(self, user_id: int) -> Employees | None:
+        result = await self.session.execute(
+            select(Employees)
+            .where(Employees.user_id == user_id)
+        )
+
+        return result.scalar_one_or_none()
+
+    async def create_employee(
+            self, params: InvitationSchema, company_id: int, password_hash: str
+    ) -> int:
+        user_result = await self.session.execute(
+            insert(Users)
+            .values(
+                company_id=company_id,
+                email=params.email,
+                password_hash=password_hash,
+                role=params.role,
+            )
+            .returning(Users.id)
+        )
+
+        await self.session.flush()
+
+        user_id = user_result.scalar_one()
+
+        await self.session.execute(
+            insert(Employees)
+            .values(
+                company_id=company_id,
+                user_id=user_id,
+                first_name=params.first_name,
+                last_name=params.last_name,
+                phone=(params.phone if params.phone else None),
+            )
+        )
+
+        return user_id
+
+    async def add_employee_token(self, user_id: int, token: str, expired_at: datetime):
+        await self.session.execute(
+            insert(UsersToken)
+            .values(
+                user_id=user_id,
+                token=token,
+                expired_at=expired_at
+            )
+        )
+
+    async def get_employee_id_by_token(self, token_hash: str) -> int | None:
+        result = await self.session.execute(
+            select(UsersToken.user_id)
+            .where(
+                UsersToken.token_hash == token_hash,
+                UsersToken.used.is_(False),
+                UsersToken.expired_at > datetime.now(timezone.utc)
+            )
+        )
+
+        return result.scalar_one_or_none()
+
+    async def update_user_password(self, user_id: int, new_password_hash: str):
+        await self.session.execute(
+            update(Users)
+            .values(password_hash=new_password_hash)
+            .where(Users.id == user_id)
+        )
+
+        await self.session.execute(
+            update(UsersToken)
+            .values(used=True)
+            .where(
+                UsersToken.user_id == user_id,
+                UsersToken.expired_at.is_(False)
+            )
+        )
