@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, ConfigDict, field_validator
+from pydantic import BaseModel, EmailStr, ConfigDict, field_validator, model_validator
 
 from app.database.models import UserRole
 
@@ -42,10 +42,9 @@ class NewPasswordSchema(BaseModel):
     new_password: str
     new_password_confirm: str
 
-    @field_validator("new_password", "new_password_confirm", mode="after")
-    @classmethod
-    def check_similar_password(cls):
-        if cls.new_password != cls.new_password_confirm:
+    @model_validator(mode="after")
+    def check_similar_password(self):
+        if self.new_password != self.new_password_confirm:
             raise ValueError("Passwords do not match")
 
-        return cls.new_password
+        return self.new_password
