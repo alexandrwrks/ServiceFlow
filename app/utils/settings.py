@@ -13,6 +13,11 @@ class Settings(BaseSettings):
     REDIS_HOST: str
     REDIS_PORT: int
 
+    ALGORITHM: str
+    ACCESS_TOKEN_MINUTES: int
+    REFRESH_TOKEN_DAYS: int
+    SECRET_API_KEY: str
+
     FRONTEND_URL: str
     SMTP_PASSWORD: str
     SMTP_USERNAME: str

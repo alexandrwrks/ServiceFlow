@@ -9,6 +9,12 @@ class TokenType(StrEnum):
 
 
 class TokenData(BaseModel):
-    user_id: int
+    user_id: str
     role: str
-    company_id: int
+    company_id: str
+
+
+class ResponseTokensSchema(BaseModel):
+    access_token: str
+    refresh_token: str
+    type: str = "Bearer"
