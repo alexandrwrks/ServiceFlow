@@ -1,6 +1,3 @@
-import uuid
-from datetime import datetime, timezone, timedelta
-
 from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,7 +8,8 @@ from app.jwt.service import jwt_service
 from app.modules.auth.repository import AuthRepo
 from app.modules.auth.schemas import RegisterCompanyRequest, InvitationSchema, LoginUserSchema
 from app.utils.security.password import hashed_password, verify_password
-from app.utils.security.token import hashed_token
+from app.utils.security.token import hashed_token, create_invitation_token
+
 
 class AuthService:
     def __init__(self, session: AsyncSession):
@@ -90,10 +88,7 @@ class AuthService:
             )
 
         password_hash = hashed_password(params.password)
-
-        token = uuid.uuid4().hex
-        token_hash = hashed_token(token)
-        expired_at = datetime.now(timezone.utc) + timedelta(days=3)
+        token, token_hash, expired_at = create_invitation_token()
 
         try:
             async with self.db.begin():
