@@ -4,8 +4,9 @@ import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
+from app.database.models import Users, UserRole, UsersToken
 from app.database.config import get_async_session
-from app.database.models import Base, Companies, Users, UserRole, UsersToken
+from app.database.models import Base, Companies
 from app.main import app
 from app.utils.security.password import hashed_password
 from app.utils.security.token import create_invitation_token
@@ -72,6 +73,28 @@ async def client(db_session: AsyncSession):
     async def override_get_new_session():
         async with test_session() as session:
             yield session
+
+    app.dependency_overrides[get_async_session] = override_get_new_session
+
+async def company(db_session):
+    company = Companies(
+        name="Test Company",
+        description="Test Company description",
+        phone="+7 912 345 6789",
+        email="example@example.com",
+    )
+
+    db_session.add(company)
+    await db_session.commit()
+    await db_session.refresh(company)
+
+    return company
+
+
+@pytest_asyncio.fixture
+async def client(db_session):
+    async def override_get_new_session():
+        yield db_session
 
     app.dependency_overrides[get_async_session] = override_get_new_session
 
