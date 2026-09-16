@@ -2,7 +2,30 @@ import pytest
 
 
 @pytest.mark.asyncio
-async def test_get_company_access(client):
+async def test_create_company_access(client):
+    new_company = {
+        "name": "Company",
+        "description": "Description",
+        "phone": "+7 912 345 67 89",
+        "email": "example@gmail.com",
+    }
+
+    response = await client.post(
+        "/api/v1/companies/",
+        json=new_company,
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data.get("message") == "Company created successfully"
+
+    assert "id" in data
+
+
+@pytest.mark.asyncio
+async def test_get_company_access(client, company):
     response = await client.get("/api/v1/companies/1")
 
     assert response.status_code == 200
@@ -26,39 +49,16 @@ async def test_get_company_failed(client):
 
 
 @pytest.mark.asyncio
-async def test_create_company_access(client):
-    new_company = {
-        "title": "Company",
-        "description": "Description",
-        "phone": "+7 912 345 67 89",
-        "email": "example@gmail.com",
-    }
-
-    response = await client.post(
-        "/api/v1/companies",
-        json=new_company,
-    )
-
-    assert response.status_code == 200
-
-    data = response.json()
-
-    assert data.get("message") == "Company created successfully"
-
-    assert "id" in data
-
-
-@pytest.mark.asyncio
 async def test_create_company_failed(client):
     new_company = {
-        "title": "Company",
+        "name": "Company",
         "description": "Description",
         "phone": "+7 912 345 67 89",
         "email": "examplegmail.com",
     }
 
     response = await client.post(
-        "/api/v1/companies",
+        "/api/v1/companies/",
         json=new_company,
     )
 
@@ -73,18 +73,16 @@ async def test_create_company_failed(client):
 
 
 @pytest.mark.asyncio
-async def test_update_company_access(client):
-    company_id = 1
-
+async def test_update_company_access(client, company):
     new_company = {
-        "title": "Company",
+        "name": "Company",
         "description": "Description",
         "phone": "+7 912 345 67 89",
         "email": "example@gmail.com",
     }
 
     response = await client.patch(
-        f"/api/v1/companies/{company_id}",
+        f"/api/v1/companies/1",
         json=new_company,
     )
 
@@ -99,8 +97,6 @@ async def test_update_company_access(client):
 
 @pytest.mark.asyncio
 async def test_update_company_failed(client):
-    company_id = -1
-
     new_company = {
         "title": "Company",
         "description": "Description",
@@ -109,7 +105,7 @@ async def test_update_company_failed(client):
     }
 
     response = await client.patch(
-        f"/api/v1/companies/{company_id}",
+        f"/api/v1/companies/-1",
         json=new_company,
     )
 
@@ -119,12 +115,8 @@ async def test_update_company_failed(client):
 
 
 @pytest.mark.asyncio
-async def test_delete_company_access(client):
-    company_id = 1
-
-    response = await client.delete(
-        f"/api/v1/companies/{company_id}",
-    )
+async def test_delete_company_access(client, company):
+    response = await client.delete("/api/v1/companies/1")
 
     assert response.status_code == 200
 
@@ -136,11 +128,7 @@ async def test_delete_company_access(client):
 
 @pytest.mark.asyncio
 async def test_delete_company_failed(client):
-    company_id = -1
-
-    response = await client.delete(
-        f"/api/v1/companies/{company_id}",
-    )
+    response = await client.delete("/api/v1/companies/-1")
 
     assert response.status_code == 404
 

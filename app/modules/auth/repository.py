@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import List
 
-from sqlalchemy import or_, select, and_, update
+from sqlalchemy import or_, select, and_, update, func
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -123,12 +123,12 @@ class AuthRepo:
 
         return user_id
 
-    async def add_employee_token(self, user_id: int, token: str, expired_at: datetime):
+    async def add_employee_token(self, user_id: int, token_hash: str, expired_at: datetime):
         await self.session.execute(
             insert(UsersToken)
             .values(
                 user_id=user_id,
-                token=token,
+                token_hash=token_hash,
                 expired_at=expired_at
             )
         )
@@ -157,6 +157,6 @@ class AuthRepo:
             .values(used=True)
             .where(
                 UsersToken.user_id == user_id,
-                UsersToken.expired_at.is_(False)
+                UsersToken.expired_at > func.now()
             )
         )

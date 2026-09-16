@@ -12,6 +12,7 @@ class NewCompanySchema(BaseModel):
 
 
 class ResponseCompany(BaseModel):
+    id: int
     name: str
     description: str
     phone: str

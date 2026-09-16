@@ -17,31 +17,35 @@ class AuthService:
         self.repo = AuthRepo(session)
 
     async def register_company(self, params: RegisterCompanyRequest):
-        exists_company = await self.repo.get_company_by_phone_or_email(params.company.email, params.company.phone)
-        for company in exists_company:
-            if company.email == params.company.email:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Email already registered"
-                )
-
-            if company.phone == params.company.phone:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Phone already registered"
-                )
-
-        exist_user = await self.repo.get_user_by_email(params.owner.email)
-        if exist_user:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email already registered"
-            )
-
         password_hash = hashed_password(params.owner.password)
 
         try:
             async with self.db.begin():
+                exists_company = await self.repo.get_company_by_phone_or_email(
+                    params.company.email,
+                    params.company.phone
+                )
+
+                for company in exists_company:
+                    if company.email == params.company.email:
+                        raise HTTPException(
+                            status_code=status.HTTP_409_CONFLICT,
+                            detail="Email already registered"
+                        )
+
+                    if company.phone == params.company.phone:
+                        raise HTTPException(
+                            status_code=status.HTTP_409_CONFLICT,
+                            detail="Phone already registered"
+                        )
+
+                exist_user = await self.repo.get_user_by_email(params.owner.email)
+                if exist_user:
+                    raise HTTPException(
+                        status_code=status.HTTP_409_CONFLICT,
+                        detail="Email already registered"
+                    )
+
                 company_id = await self.repo.create_company(params.company)
 
                 await self.repo.register_owner_to_company(company_id, params.owner, password_hash)
@@ -58,7 +62,7 @@ class AuthService:
         }
 
     async def check_user(self, access_token: str) -> Users:
-        payload = jwt_service.verify_refresh_token(access_token)
+        payload = jwt_service.verify_access_token(access_token)
         user_id = int(payload.get('sub'))
 
         exists_user = await self.repo.get_user_by_id(user_id)
@@ -70,7 +74,7 @@ class AuthService:
 
         return exists_user
 
-    async def check_owner_user(self, user: Users):
+    async def check_owner_user(self, user: Users) -> Users:
         if user.role != UserRole.OWNER:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -83,7 +87,7 @@ class AuthService:
         exist_user = await self.repo.get_user_by_email(params.email)
         if exist_user:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
+                status_code=status.HTTP_409_CONFLICT,
                 detail="Email already registered"
             )
 
@@ -91,12 +95,13 @@ class AuthService:
         token, token_hash, expired_at = create_invitation_token()
 
         try:
-            async with self.db.begin():
-                user_id = await self.repo.create_employee(params, user.company_id, password_hash)
+            user_id = await self.repo.create_employee(params, user.company_id, password_hash)
+            await self.repo.add_employee_token(user_id, token_hash, expired_at)
 
-                await self.repo.add_employee_token(user_id, token_hash, expired_at)
+            await self.db.commit()
 
         except IntegrityError:
+            await self.db.rollback()
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Employee already exists"

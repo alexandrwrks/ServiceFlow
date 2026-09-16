@@ -30,5 +30,5 @@ async def get_current_user(
 async def check_owner_user(
         current_user: Users = Depends(get_current_user),
         service: AuthService = Depends(get_auth_service)
-):
+) -> Users:
     return await service.check_owner_user(current_user)

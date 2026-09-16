@@ -93,7 +93,7 @@ class JWTService:
 
         return payload
 
-    def access_token_expired(self, credentials: str) -> dict[str, Any]:
+    def verify_access_token(self, credentials: str) -> dict[str, Any]:
         payload = self.verify_token(credentials)
         return self.verify_token_type(payload, TokenType.ACCESS)
 

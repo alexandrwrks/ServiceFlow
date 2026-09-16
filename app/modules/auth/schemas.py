@@ -47,4 +47,4 @@ class NewPasswordSchema(BaseModel):
         if self.new_password != self.new_password_confirm:
             raise ValueError("Passwords do not match")
 
-        return self.new_password
+        return self
