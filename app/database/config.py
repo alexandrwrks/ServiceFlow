@@ -11,5 +11,4 @@ new_session = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSes
 
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
     async with new_session() as session:
-        async with session.begin():
-            yield session
+        yield session

@@ -9,9 +9,9 @@ class TokenType(StrEnum):
 
 
 class TokenData(BaseModel):
-    user_id: str
+    user_id: int
     role: str
-    company_id: str
+    company_id: int
 
 
 class ResponseTokensSchema(BaseModel):

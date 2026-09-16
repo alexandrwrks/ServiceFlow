@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime, timezone, timedelta
 
 from fastapi import HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.models import Users, UserRole, StatusType
@@ -14,6 +15,7 @@ from app.utils.security.token import hashed_token
 
 class AuthService:
     def __init__(self, session: AsyncSession):
+        self.db = session
         self.repo = AuthRepo(session)
 
     async def register_company(self, params: RegisterCompanyRequest):
@@ -39,9 +41,18 @@ class AuthService:
             )
 
         password_hash = hashed_password(params.owner.password)
-        company_id = await self.repo.create_company(params.company)
 
-        await self.repo.register_owner_to_company(company_id, params.owner, password_hash)
+        try:
+            async with self.db.begin():
+                company_id = await self.repo.create_company(params.company)
+
+                await self.repo.register_owner_to_company(company_id, params.owner, password_hash)
+
+        except IntegrityError:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Company or owner already exists"
+            )
 
         return {
             "company_id": company_id,
@@ -80,13 +91,21 @@ class AuthService:
 
         password_hash = hashed_password(params.password)
 
-        user_id = await self.repo.create_employee(params, user.company_id, password_hash)
-
         token = uuid.uuid4().hex
         token_hash = hashed_token(token)
         expired_at = datetime.now(timezone.utc) + timedelta(days=3)
 
-        await self.repo.add_employee_token(user_id, token_hash, expired_at)
+        try:
+            async with self.db.begin():
+                user_id = await self.repo.create_employee(params, user.company_id, password_hash)
+
+                await self.repo.add_employee_token(user_id, token_hash, expired_at)
+
+        except IntegrityError:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Employee already exists"
+            )
 
         return {
             "token": f"/employees/invitations/{token}/activate",
@@ -97,7 +116,6 @@ class AuthService:
         token_hash = hashed_token(token)
 
         user_id = await self.repo.get_employee_id_by_token(token_hash)
-
         if user_id is None:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -106,7 +124,16 @@ class AuthService:
 
         password_hash = hashed_password(new_password)
 
-        await self.repo.update_user_password(user_id, password_hash)
+        try:
+            await self.repo.update_user_password(user_id, password_hash)
+            await self.db.commit()
+
+        except IntegrityError:
+            await self.db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Failed to update user"
+            )
 
         return {
             "message": "Employee activated",

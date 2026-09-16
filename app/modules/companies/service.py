@@ -1,4 +1,5 @@
 from fastapi import HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.models import Companies
@@ -10,8 +11,9 @@ from app.utils.logger import logger
 
 class CompanyService:
     def __init__(self, session: AsyncSession, cache: CacheService):
-        self.repo = CompanyRepo(session)
+        self.db = session
         self.cache = cache
+        self.repo = CompanyRepo(session)
 
     async def get_company(self, company: Companies) -> ResponseCompany:
         key = f"company:{company.id}"
@@ -43,10 +45,13 @@ class CompanyService:
     async def create_company(self, params: NewCompanySchema):
         try:
             company_id = await self.repo.create_company(params)
-        except Exception:
+            await self.db.commit()
+
+        except IntegrityError:
+            await self.db.rollback()
             logger.exception("Failed to create company")
             raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_ERROR,
+                status_code=status.HTTP_409_CONFLICT,
                 detail="Failed to create company",
             )
 
@@ -60,7 +65,18 @@ class CompanyService:
         key = f"company:{company_id}"
         try:
             await self.repo.update_company(company_id, params)
+            await self.db.commit()
+
+        except IntegrityError:
+            await self.db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Failed to update company",
+            )
+
         except Exception:
+            await self.db.rollback()
+
             logger.exception("Failed to update company")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_ERROR,
