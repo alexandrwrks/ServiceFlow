@@ -94,7 +94,8 @@ async def company(db_session):
 @pytest_asyncio.fixture
 async def client(db_session):
     async def override_get_new_session():
-        yield db_session
+        async with test_session() as session:
+            yield session
 
     app.dependency_overrides[get_async_session] = override_get_new_session
 

@@ -144,3 +144,15 @@
 2026-09-17T10:00:50.357778+0700 | WARNING | Not found company -1
 2026-09-17T10:00:51.328072+0700 | INFO | Successfully delete company: 1
 2026-09-17T10:00:52.243171+0700 | WARNING | Not found company -1
+2026-09-16T20:59:47.238267+0700 | INFO | Successfully create company: 1
+2026-09-16T20:59:48.110254+0700 | INFO | REDIS MISS: company:1
+2026-09-16T20:59:48.930978+0700 | WARNING | Not found company -1
+2026-09-16T20:59:51.246653+0700 | WARNING | Not found company -1
+2026-09-16T20:59:52.049839+0700 | INFO | Successfully delete company: 1
+2026-09-16T20:59:52.813851+0700 | WARNING | Not found company -1
+2026-09-16T21:04:52.178463+0700 | INFO | Successfully create company: 1
+2026-09-16T21:04:53.098291+0700 | INFO | REDIS MISS: company:1
+2026-09-16T21:04:53.881464+0700 | WARNING | Not found company -1
+2026-09-16T21:04:56.728621+0700 | WARNING | Not found company -1
+2026-09-16T21:04:57.828927+0700 | INFO | Successfully delete company: 1
+2026-09-16T21:04:58.924782+0700 | WARNING | Not found company -1
