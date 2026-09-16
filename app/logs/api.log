@@ -156,3 +156,10 @@
 2026-09-16T21:04:56.728621+0700 | WARNING | Not found company -1
 2026-09-16T21:04:57.828927+0700 | INFO | Successfully delete company: 1
 2026-09-16T21:04:58.924782+0700 | WARNING | Not found company -1
+2026-09-16T22:46:41.648704+0700 | WARNING | Invalid token type
+2026-09-17T10:00:45.907151+0700 | INFO | Successfully create company: 1
+2026-09-17T10:00:46.894661+0700 | INFO | REDIS MISS: company:1
+2026-09-17T10:00:47.759662+0700 | WARNING | Not found company -1
+2026-09-17T10:00:50.357778+0700 | WARNING | Not found company -1
+2026-09-17T10:00:51.328072+0700 | INFO | Successfully delete company: 1
+2026-09-17T10:00:52.243171+0700 | WARNING | Not found company -1

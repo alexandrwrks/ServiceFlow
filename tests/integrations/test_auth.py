@@ -96,6 +96,37 @@ async def test_employee_invitations_failed(client, owner_token, owner):
     assert data.get("detail") == "Email already registered"
 
 
+
+    data = response.json()
+
+    assert "token" in data
+    assert data.get("message") == "Employee created"
+
+
+@pytest.mark.asyncio
+async def test_employee_invitations_failed(client, owner_token, owner):
+    request_schema = {
+        "first_name": "Test Employees",
+        "last_name": "Test Employees",
+        "phone": "+7 912 345 6789",
+        "email": "user@example.com",
+        "password": "Test Password",
+        "role": UserRole.EMPLOYEE,
+    }
+
+    response = await client.post(
+        "/api/v1/auth/employees/invitations",
+        json=request_schema,
+        headers={"Authorization": f"Bearer {owner_token}"}
+    )
+
+    assert response.status_code == 409
+
+    data = response.json()
+
+    assert data.get("detail") == "Email already registered"
+
+
 @pytest.mark.asyncio
 async def test_accept_employee_invitations_access(client, token):
     response = await client.post(
