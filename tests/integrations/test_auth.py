@@ -96,12 +96,54 @@ async def test_employee_invitations_failed(client, owner_token, owner):
     assert data.get("detail") == "Email already registered"
 
 
+@pytest.mark.asyncio
+async def test_accept_employee_invitations_access(client, token):
+    response = await client.post(
+        f"/api/v1/auth/employees/invitations/{token}/activate",
+        json={
+            "new_password": "Test Password",
+            "new_password_confirm": "Test Password"
+        }
+    )
+
+    assert response.status_code == 200
+    assert response.json().get("message") == "Employee activated"
 
     data = response.json()
 
     assert "token" in data
     assert data.get("message") == "Employee created"
 
+
+@pytest.mark.asyncio
+async def test_accept_employee_invitations_failed(client):
+    response = await client.post(
+        f"/api/v1/auth/employees/invitations/token/activate",
+        json={
+            "new_password": "Test Password",
+            "new_password_confirm": "Test Password"
+        }
+    )
+
+    assert response.status_code == 400
+    assert response.json().get("detail") == "Invalid token"
+
+
+@pytest.mark.asyncio
+async def test_login_accept(client, owner):
+    response = await client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": owner.email,
+            "password": "Test Password",
+        }
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert "access_token" in data
 
 @pytest.mark.asyncio
 async def test_employee_invitations_failed(client, owner_token, owner):

@@ -4,11 +4,9 @@ import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
-from app.database.models import Users, UserRole, UsersToken
 from app.database.config import get_async_session
-from app.database.models import Base, Companies, Users, UserRole, Employees
+from app.database.models import Base, Companies, Users, UserRole, UsersToken
 from app.main import app
-from app.utils.security.password import hashed_password
 from app.utils.security.password import hashed_password
 from app.utils.security.token import create_invitation_token
 
@@ -35,23 +33,6 @@ async def db_session():
 
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
-
-
-@pytest_asyncio.fixture
-async def company(db_session: AsyncSession):
-async def company(db_session: AsyncSession):
-    company = Companies(
-        name="Test Company",
-        description="Test Company description",
-        phone="+7 912 345 6789",
-        email="example@example.com",
-    )
-
-    db_session.add(company)
-    await db_session.commit()
-    await db_session.refresh(company)
-
-    return company
 
 
 @pytest_asyncio.fixture
