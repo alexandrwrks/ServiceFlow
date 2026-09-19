@@ -1,12 +1,13 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import List
 
-from sqlalchemy import or_, select, and_, update, func
+from sqlalchemy import or_, select, update, func, delete
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database.models import Companies, Users, UserRole, Employees, UsersToken
+from app.database.models import Companies, Users, UserRole, Employees, UsersToken, RefreshTokens, KeyStatusType
 from app.modules.auth.schemas import RegisterCompanySchema, RegisterUserSchema, InvitationSchema
+from app.utils.settings import settings
 
 
 class AuthRepo:
@@ -159,4 +160,39 @@ class AuthRepo:
                 UsersToken.user_id == user_id,
                 UsersToken.expired_at > func.now()
             )
+        )
+
+    async def get_refresh_token_by_user_id(self, user_id: int) -> RefreshTokens | None:
+        result = await self.session.execute(
+            select(RefreshTokens)
+            .where(
+                RefreshTokens.user_id == user_id,
+                RefreshTokens.expired_at > datetime.now(timezone.utc),
+                RefreshTokens.status.is_(KeyStatusType.ACTIVE)
+            )
+        )
+
+        return result.scalar_one_or_none()
+
+    async def inactive_token(self, user_id: int):
+        await self.session.execute(
+            update(RefreshTokens)
+            .values(status=KeyStatusType.REVOKED)
+            .where(RefreshTokens.user_id == user_id)
+        )
+
+    async def insert_token(self, new_token: str, user_id: int):
+        await self.session.execute(
+            insert(RefreshTokens)
+            .values(
+                user_id=user_id,
+                hash_refresh_token=new_token,
+                expired_at=datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_DAYS)
+            )
+        )
+
+    async def delete_token(self, user_id: int):
+        await self.session.execute(
+            delete(RefreshTokens)
+            .where(RefreshTokens.user_id == user_id)
         )

@@ -388,6 +388,12 @@ class RefreshTokens(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     hash_refresh_token: Mapped[str] = mapped_column(nullable=False)
     status: Mapped[KeyStatusType] = mapped_column(default=KeyStatusType.ACTIVE, nullable=False)
+    expired_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), default=func.now(), nullable=False)
-    revoked_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True),
+        default=func.now(),
+        onupdate=func.now(),
+        nullable=False
+    )

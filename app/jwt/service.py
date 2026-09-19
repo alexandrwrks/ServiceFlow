@@ -32,7 +32,7 @@ class JWTService:
             algorithm=self.ALGORITHM,
         )
 
-    def get_tokens(self, data: TokenData):
+    def get_tokens(self, data: TokenData) -> ResponseTokensSchema:
         now = datetime.now(timezone.utc)
         return ResponseTokensSchema(
             access_token=self.create_access_token(data, now),
