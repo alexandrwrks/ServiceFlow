@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 
 from app.database.models import Users, UserRole
 from app.dependencies_factory import check_roles
-from app.modules.services.deps import get_provider_service
+from app.modules.services.deps import get_provider_service, CheckServiceIdDep
 from app.modules.services.schema import CreateNewService, UpdateService
 from app.modules.services.service import ProviderService
 
@@ -13,9 +13,9 @@ router = APIRouter(prefix="/services")
 @router.get("/")
 async def get_company_services(
         company_id: int,
-        service: ProviderService = Depends(get_provider_service)
+        manager: ProviderService = Depends(get_provider_service)
 ):
-    return await service.get_company_services(company_id)
+    return await manager.get_company_services(company_id)
 
 
 @router.post("/")
@@ -28,22 +28,22 @@ async def create_company_service(
                 UserRole.ADMIN,
             )
         ),
-        service: ProviderService = Depends(get_provider_service)
+        manager: ProviderService = Depends(get_provider_service)
 ):
-    return await service.create_new_company_service(params, current_employee)
+    return await manager.create_new_company_service(params, current_employee)
 
 
 @router.get("/{service_id}")
 async def get_company_service(
-        service_id: int,
-        service: ProviderService = Depends(get_provider_service)
+        service: CheckServiceIdDep,
+        manager: ProviderService = Depends(get_provider_service)
 ):
-    return await service.get_service_by_id(service_id)
+    return await manager.get_service_by_id(service)
 
 
 @router.patch("/{service_id}")
 async def patch_company_service(
-        service_id: int,
+        service: CheckServiceIdDep,
         params: UpdateService,
         current_employee: Users = Depends(
             check_roles(
@@ -52,14 +52,14 @@ async def patch_company_service(
                 UserRole.ADMIN,
             )
         ),
-        service: ProviderService = Depends(get_provider_service)
+        manager: ProviderService = Depends(get_provider_service)
 ):
-    return await service.change_company_service(service_id, params, current_employee)
+    return await manager.update_company_service(service, params, current_employee)
 
 
 @router.delete("/{service_id}")
 async def delete_company_service(
-        service_id: int,
+        service: CheckServiceIdDep,
         current_employee: Users = Depends(
             check_roles(
                 UserRole.OWNER,
@@ -67,14 +67,14 @@ async def delete_company_service(
                 UserRole.ADMIN,
             )
         ),
-        service: ProviderService = Depends(get_provider_service)
+        manager: ProviderService = Depends(get_provider_service)
 ):
-    return await service.delete_company_service(service_id, current_employee)
+    return await manager.delete_company_service(service, current_employee)
 
 
 @router.patch("/{service_id}/status")
 async def patch_company_service_status(
-        service_id: int,
+        service: CheckServiceIdDep,
         current_employee: Users = Depends(
             check_roles(
                 UserRole.OWNER,
@@ -82,6 +82,6 @@ async def patch_company_service_status(
                 UserRole.ADMIN,
             )
         ),
-        service: ProviderService = Depends(get_provider_service)
+        manager: ProviderService = Depends(get_provider_service)
 ):
-    return await service.patch_company_service_status(service_id, current_employee)
+    return await manager.patch_company_service_status(service.id, current_employee)

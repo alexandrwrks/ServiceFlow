@@ -158,7 +158,7 @@ class Services(Base):
     base_price: Mapped[decimal.Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     currency: Mapped[CurrencyType] = mapped_column(default=CurrencyType.RUB, nullable=False)
     duration_minutes: Mapped[int] = mapped_column(nullable=True)  # время в минутах
-    is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
+    is_active: Mapped[StatusType] = mapped_column(default=StatusType.ACTIVE, nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), default=func.now(), nullable=False
