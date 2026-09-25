@@ -2,7 +2,7 @@ import decimal
 from datetime import datetime
 from enum import StrEnum
 
-from sqlalchemy import TIMESTAMP, func, ForeignKey, DECIMAL, String
+from sqlalchemy import TIMESTAMP, func, ForeignKey, DECIMAL, String, Numeric
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -31,12 +31,12 @@ class Companies(Base):
 
 
 class UserRole(StrEnum):
-    OWNER = "OWNER"
-    ADMIN = "ADMIN"
-    DISPATCHER = "DISPATCHER"
-    MANAGER = "MANAGER"
-    EMPLOYEE = "EMPLOYEE"
-    ACCOUNTANT = "ACCOUNTANT"
+    OWNER = "OWNER" # основатель компании
+    ADMIN = "ADMIN" # админ
+    DISPATCHER = "DISPATCHER" #диспетчер
+    MANAGER = "MANAGER" # менеджер
+    EMPLOYEE = "EMPLOYEE" # сотрудник
+    ACCOUNTANT = "ACCOUNTANT" # бухгалтер
 
 
 class StatusType(StrEnum):
@@ -139,21 +139,36 @@ class CustomerAddresses(Base):
     __tablename__ = "customer_addresses"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    customer_id: Mapped[int] = mapped_column(ForeignKey("customers.id"), nullable=False)
+    customer_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     address: Mapped[str] = mapped_column(nullable=False)
     city: Mapped[str] = mapped_column(nullable=False)
+
+
+class CurrencyType(StrEnum):
+    RUB = "RUB"
 
 
 class Services(Base):
     __tablename__ = "services"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    company_id: Mapped[int] = mapped_column(ForeignKey("companies.id"), nullable=False)
-    name: Mapped[str] = mapped_column(nullable=False)
-    description: Mapped[str] = mapped_column(nullable=True)
-    base_price: Mapped[decimal.Decimal] = mapped_column(nullable=False)
-    estimated_duration: Mapped[int] = mapped_column(nullable=False)  # время в минутах
+    company_id: Mapped[int] = mapped_column(ForeignKey("companies.id"), nullable=False, index=True)
+    name: Mapped[str] = mapped_column(String(150), nullable=False)
+    description: Mapped[str] = mapped_column(String(1500), nullable=True)
+    base_price: Mapped[decimal.Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    currency: Mapped[CurrencyType] = mapped_column(default=CurrencyType.RUB, nullable=False)
+    duration_minutes: Mapped[int] = mapped_column(nullable=True)  # время в минутах
     is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
+
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True),
+        default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
 
 
 class OrderStatusType(StrEnum):
@@ -169,14 +184,11 @@ class OrderStatusType(StrEnum):
     CANCELLED = "CANCELLED"
 
 
-class CurrencyType(StrEnum):
-    RUB = "RUB"
-
-
 class Orders(Base):
     __tablename__ = "orders"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    service_id: Mapped[int] = mapped_column(ForeignKey("services.id"), nullable=False)
     company_id: Mapped[int] = mapped_column(ForeignKey("companies.id"), nullable=False)
     customer_id: Mapped[int] = mapped_column(ForeignKey("customers.id"), nullable=False)
     status: Mapped[OrderStatusType] = mapped_column(
@@ -202,9 +214,7 @@ class Orders(Base):
         nullable=False,
     )
 
-    completed_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), nullable=True
-    )
+    completed_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
 
 
 class OrderHistoryStatus(Base):
