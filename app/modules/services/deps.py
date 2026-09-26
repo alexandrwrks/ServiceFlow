@@ -13,7 +13,7 @@ async def get_provider_service(session: AsyncSession = Depends(get_async_session
     return ProviderService(session)
 
 
-async def get_provider_repo(session: AsyncSession) -> ProviderRepo:
+async def get_provider_repo(session: AsyncSession = Depends(get_async_session)) -> ProviderRepo:
     return ProviderRepo(session)
 
 
