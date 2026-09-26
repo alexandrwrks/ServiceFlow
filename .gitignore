@@ -3,6 +3,10 @@
 .idea
 __pycache__
 .env.docker
-app/logs
+
 .todo
 .vscode
+
+# Logs
+**/logs/
+*.log
