@@ -1,6 +1,23 @@
 services:
+  api_sf:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: serviceflow_api
+    restart: always
+    env_file:
+      - .env.docker
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      db_sf:
+        condition: service_healthy
+      redis_sf:
+        condition: service_healthy
 
-  bot_db:
+  db_sf:
     image: postgres:17
     container_name: serviceflow_db
     restart: always
@@ -12,7 +29,7 @@ services:
     env_file:
       - .env.docker
     volumes:
-      - bot_db_data:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql/data
     ports:
       - "5433:5432"
 
@@ -29,11 +46,25 @@ services:
   redis_sf:
     image: redis:8-alpine
     container_name: redis_service_flow
+    restart: always
     env_file:
       - .env.docker
     ports:
       - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
+  migrate_sf:
+    build: .
+    command: uv run alembic upgrade head
+    env_file:
+      - .env.docker
+    depends_on:
+      db_sf:
+        condition: service_healthy
 
 volumes:
-  bot_db_data:
+  db_data:
