@@ -3,7 +3,7 @@
 .idea
 __pycache__
 .env.docker
-app/logs
+backend/logs
 .todo
 .vscode
 .gitignore

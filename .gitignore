@@ -10,3 +10,12 @@ __pycache__
 # Logs
 **/logs/
 *.log
+
+# Logs
+**/logs/
+*.log
+
+# Frontend
+node_modules/
+dist/
+*.tsbuildinfo

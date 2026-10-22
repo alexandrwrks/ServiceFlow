@@ -1,6 +1,6 @@
 import asyncio
 
-from app.email_service import EmailService
+from backend.email_service import EmailService
 
 
 if __name__ == "__main__":

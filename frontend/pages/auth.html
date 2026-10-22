@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ServiceFlow - Авторизация</title>
+
+    <link href="../css/pages/auth.css" rel="stylesheet">
+</head>
+<body>
+    <main class="auth-container">
+
+        <h1>ServiceFlow</h1>
+
+        <div class="auth-card">
+            <div class="auth-tabs">
+                <button
+                    type="button"
+                    id="login-tab"
+                    class="auth-tab active"
+                >
+                    Авторизация
+                </button>
+
+                <button
+                    type="button"
+                    id="register-tab"
+                    class="auth-tab"
+                >
+                    Регистрация
+                </button>
+            </div>
+
+            <form id="login-form" class="auth-form">
+
+                <h2>Вход</h2>
+
+                <label for="login-phone">Телефон</label>
+
+                <input
+                    type="text"
+                    id="login-phone"
+                    name="phone"
+                    placeholder="+7 900 000-00-00"
+                    required
+                >
+
+                <label for="login-password">Фамилия</label>
+
+                <input
+                    type="text"
+                    id="login-password"
+                    name="password"
+                    placeholder="Введите пароль"
+                    required
+                >
+
+                <button type="submit">Войти</button>
+
+            </form>
+
+            <form
+                id="register-form"
+                class="auth-form hidden"
+            >
+                <h2>Регистрация</h2>
+
+                <label for="register-first-name">
+                    Имя
+                </label>
+
+                <input
+                    type="text"
+                    id="register-first-name"
+                    name="first_name"
+                    required
+                >
+
+                <label for="register-second-name">
+                    Фамилия
+                </label>
+
+                <input
+                    type="text"
+                    id="register-second-name"
+                    name="second_name"
+                    required
+                >
+
+
+                <label for="register-phone">
+                    Телефон
+                </label>
+
+                <input
+                    type="tel"
+                    id="register-phone"
+                    name="phone"
+                    required
+                >
+
+                <label for="register-password">
+                    Пароль
+                </label>
+
+                <input
+                    type="password"
+                    id="register-password"
+                    name="password"
+                    required
+                >
+
+                <button type="submit">
+                    Зарегистрироваться
+                </button>
+            </form>
+
+        </div>
+    </main>
+
+    <script src="../js/pages/auth.js"></script>
+</body>
+</html>
